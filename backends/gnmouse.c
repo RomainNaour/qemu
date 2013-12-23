@@ -30,7 +30,7 @@
 #include "qemu-common.h"
 #include "sysemu/char.h"
 #include "ui/console.h"
-#include "qemu-timer.h"
+#include "qemu/timer.h"
 
 //#define DEBUG_GENIUS_MOUSE
 
