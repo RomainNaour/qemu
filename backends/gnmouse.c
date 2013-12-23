@@ -30,7 +30,6 @@
 #include "qemu-common.h"
 #include "sysemu/char.h"
 #include "ui/console.h"
-#include "gnmouse.h"
 #include "qemu-timer.h"
 
 //#define DEBUG_GENIUS_MOUSE
@@ -314,7 +313,7 @@ static void gnmouse_event(void *opaque,
  * 
  * @opts: argument not used
  */
-CharDriverState *qemu_chr_open_gnmouse (QemuOpts *opts)
+static CharDriverState *qemu_chr_open_gnmouse (QemuOpts *opts)
 {
     CharDriverState *chr;
     gnmouse_save * save;
@@ -345,3 +344,10 @@ CharDriverState *qemu_chr_open_gnmouse (QemuOpts *opts)
     
     return chr;
 }
+
+static void register_types(void)
+{
+    register_char_driver("gnmouse", qemu_chr_open_gnmouse);
+}
+
+type_init(register_types);
