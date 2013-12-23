@@ -306,6 +306,9 @@ CharDriverState *qemu_char_get_next_serial(void);
 /* msmouse */
 CharDriverState *qemu_chr_open_msmouse(void);
 
+/* gnmouse */
+CharDriverState *qemu_chr_open_gnmouse(void);
+
 /* baum.c */
 CharDriverState *chr_baum_init(void);
 

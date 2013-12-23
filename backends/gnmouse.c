@@ -313,7 +313,7 @@ static void gnmouse_event(void *opaque,
  * 
  * @opts: argument not used
  */
-static CharDriverState *qemu_chr_open_gnmouse (QemuOpts *opts)
+CharDriverState *qemu_chr_open_gnmouse (void)
 {
     CharDriverState *chr;
     gnmouse_save * save;
@@ -347,7 +347,7 @@ static CharDriverState *qemu_chr_open_gnmouse (QemuOpts *opts)
 
 static void register_types(void)
 {
-    register_char_driver("gnmouse", qemu_chr_open_gnmouse);
+    register_char_driver_qapi("gnmouse", CHARDEV_BACKEND_KIND_GNMOUSE, NULL);
 }
 
 type_init(register_types);

@@ -3617,6 +3617,7 @@
                                        'null'   : 'ChardevDummy',
                                        'mux'    : 'ChardevMux',
                                        'msmouse': 'ChardevDummy',
+                                       'gnmouse': 'ChardevDummy',
                                        'braille': 'ChardevDummy',
                                        'stdio'  : 'ChardevStdio',
                                        'console': 'ChardevDummy',
