@@ -28,7 +28,7 @@
 #include <sys/time.h>
 
 #include "qemu-common.h"
-#include "char/char.h"
+#include "sysemu/char.h"
 #include "ui/console.h"
 #include "gnmouse.h"
 #include "qemu-timer.h"
