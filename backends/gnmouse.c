@@ -30,14 +30,14 @@
 #include "../qemu-common.h"
 #include "../qemu-char.h"
 #include "../console.h"
-#include "geniusmouse.h"
+#include "gnmouse.h"
 #include "qemu-timer.h"
 
 //#define DEBUG_GENIUS_MOUSE
 
 #ifdef DEBUG_GENIUS_MOUSE
 #define DPRINTF(fmt, ...) \
-do { fprintf(stderr, "geniusmouse: " fmt , ## __VA_ARGS__); } while (0)
+do { fprintf(stderr, "gnmouse: " fmt , ## __VA_ARGS__); } while (0)
 #else
 #define DPRINTF(fmt, ...) \
 do {} while (0)
@@ -50,7 +50,7 @@ do {} while (0)
 #define GENIUS_MOUSE_DROP 3
 
 /*
- * struct geniusmouse_save:
+ * struct gnmouse_save:
  * This structure is used to save private info for Genius mouse.
  * 
  * dx: deltas on x-axis saved since last frame send to emulated system.
@@ -60,7 +60,7 @@ do {} while (0)
  * data: frame to be sent
  * index: used to save current state of the state machine. see type states below
  */
-typedef struct geniusmouse_save{
+typedef struct gnmouse_save{
   int dx;
   int dy;
   int button;
@@ -68,7 +68,7 @@ typedef struct geniusmouse_save{
   uint64_t transmit_time;		/* time to transmit a char in ticks*/
   unsigned char data[5];
   int index;
-} geniusmouse_save;
+} gnmouse_save;
 
 
 /* states  */
@@ -85,7 +85,7 @@ typedef enum
 states;
 
 /**
- * geniusmouse_chr_write: this function is used when Qemu 
+ * gnmouse_chr_write: this function is used when Qemu 
  * try to write something to mouse port.
  * Nothing is send to the emulated mouse.
  * 
@@ -95,33 +95,33 @@ states;
  * @buf: buffer to write
  * @len: lengh of the buffer to write
  */
-static int geniusmouse_chr_write (struct CharDriverState *s, const uint8_t *buf, int len)
+static int gnmouse_chr_write (struct CharDriverState *s, const uint8_t *buf, int len)
 {
     /* Ignore writes to mouse port */
     return len;
 }
 
 /**
- * geniusmouse_chr_close: this function close the mouse port.
- * It stop and free the Qemu's timer and free geniusmouse_save struct.
+ * gnmouse_chr_close: this function close the mouse port.
+ * It stop and free the Qemu's timer and free gnmouse_save struct.
  * 
  * Return: void
  * 
  * @chr: address of the CharDriverState used by the mouse
  */
-static void geniusmouse_chr_close (struct CharDriverState *chr)
+static void gnmouse_chr_close (struct CharDriverState *chr)
 {
     /* stop and free the Qemu's timer */
-    qemu_del_timer( ((geniusmouse_save *)chr->opaque)->transmit_timer);
-    qemu_free_timer(((geniusmouse_save *)chr->opaque)->transmit_timer);
-    /* free geniusmouse_save struct */
+    qemu_del_timer( ((gnmouse_save *)chr->opaque)->transmit_timer);
+    qemu_free_timer(((gnmouse_save *)chr->opaque)->transmit_timer);
+    /* free gnmouse_save struct */
     g_free(chr->opaque);
     g_free (chr);
 }
 
 /**
- * geniusmouse_handler: send a byte on serial port to the guest system
- * This handler is called on each timer timeout or directly by geniusmouse_event()
+ * gnmouse_handler: send a byte on serial port to the guest system
+ * This handler is called on each timer timeout or directly by gnmouse_event()
  * when no transmission is underway.
  * It use a state machine in order to know with byte of the frame must be send.
  * 
@@ -129,10 +129,10 @@ static void geniusmouse_chr_close (struct CharDriverState *chr)
  * 
  * @opaque: address of the CharDriverState used by the mouse
  */
-static void geniusmouse_handler (void *opaque)
+static void gnmouse_handler (void *opaque)
 {
     CharDriverState *chr = (CharDriverState *)opaque;
-    geniusmouse_save *save = (geniusmouse_save *)chr->opaque;
+    gnmouse_save *save = (gnmouse_save *)chr->opaque;
     unsigned char *data = save->data;
     int dx_tmp, dy_tmp;
 /* 
@@ -256,7 +256,7 @@ static void geniusmouse_handler (void *opaque)
 }
 
 /**
- * geniusmouse_event: event handler called by SDL functions 
+ * gnmouse_event: event handler called by SDL functions 
  * on each mouse movement or button press.
  * 
  * Return void
@@ -267,11 +267,11 @@ static void geniusmouse_handler (void *opaque)
  * @dz: deltas on the z-axis since last event (not used)
  * @button_state: status of mouse button
  */
-static void geniusmouse_event(void *opaque,
+static void gnmouse_event(void *opaque,
                           int dx, int dy, int dz, int buttons_state)
 {
     CharDriverState *chr = (CharDriverState *)opaque;
-    geniusmouse_save *save = (geniusmouse_save *)chr->opaque;
+    gnmouse_save *save = (gnmouse_save *)chr->opaque;
     char BP = 0x80;
     static int drop = 1;
     
@@ -299,37 +299,37 @@ static void geniusmouse_event(void *opaque,
     if(save->index == STOP){
       /* no transmission is underway, start a new transmission */
       save->index = START;
-      geniusmouse_handler( (void*) chr);
+      gnmouse_handler( (void*) chr);
     }
 }
 
 /**
- * qemu_chr_open_geniusmouse: Init function for Genius mouse
- * allocate a geniusmouse_save structure to save data used by geniusmouse emulation.
+ * qemu_chr_open_gnmouse: Init function for Genius mouse
+ * allocate a gnmouse_save structure to save data used by gnmouse emulation.
  * allocate a new CharDriverState.
- * create a new Qemu's timer with geniusmouse_handler() as timeout handler.
+ * create a new Qemu's timer with gnmouse_handler() as timeout handler.
  * calculate the transmit_time for 1200 bauds transmission.
  * 
  * Return address of the initialized CharDriverState
  * 
  * @opts: argument not used
  */
-CharDriverState *qemu_chr_open_geniusmouse (QemuOpts *opts)
+CharDriverState *qemu_chr_open_gnmouse (QemuOpts *opts)
 {
     CharDriverState *chr;
-    geniusmouse_save * save;
+    gnmouse_save * save;
 
-    DPRINTF("qemu_chr_open_geniusmouse\n");
+    DPRINTF("qemu_chr_open_gnmouse\n");
 
-    /* allocate CharDriverState and geniusmouse_save */
+    /* allocate CharDriverState and gnmouse_save */
     chr = g_malloc0(sizeof(CharDriverState));
-    save = g_malloc0(sizeof(geniusmouse_save));
+    save = g_malloc0(sizeof(gnmouse_save));
 
-    chr->chr_write = geniusmouse_chr_write;
-    chr->chr_close = geniusmouse_chr_close;
+    chr->chr_write = gnmouse_chr_write;
+    chr->chr_close = gnmouse_chr_close;
 
-    /* create a new Qemu's timer with geniusmouse_handler() as timeout handler. */
-    save->transmit_timer = qemu_new_timer_ns(vm_clock, (QEMUTimerCB *) geniusmouse_handler, chr);
+    /* create a new Qemu's timer with gnmouse_handler() as timeout handler. */
+    save->transmit_timer = qemu_new_timer_ns(vm_clock, (QEMUTimerCB *) gnmouse_handler, chr);
     /* calculate the transmit_time for 1200 bauds transmission */
     save->transmit_time = (get_ticks_per_sec() / 1200) * 10; /* 1200 bauds */
     
@@ -338,10 +338,10 @@ CharDriverState *qemu_chr_open_geniusmouse (QemuOpts *opts)
     /* init state machine */
     save->index = STOP;
     
-    /* keep address of geniusmouse_save */
+    /* keep address of gnmouse_save */
     chr->opaque = save;
 
-    qemu_add_mouse_event_handler(geniusmouse_event, chr, 0, "QEMU Genius GM-6000 Mouse");
+    qemu_add_mouse_event_handler(gnmouse_event, chr, 0, "QEMU Genius GM-6000 Mouse");
     
     return chr;
 }
