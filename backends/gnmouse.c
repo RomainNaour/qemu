@@ -111,8 +111,8 @@ static int gnmouse_chr_write (struct CharDriverState *s, const uint8_t *buf, int
 static void gnmouse_chr_close (struct CharDriverState *chr)
 {
     /* stop and free the Qemu's timer */
-    qemu_del_timer( ((gnmouse_save *)chr->opaque)->transmit_timer);
-    qemu_free_timer(((gnmouse_save *)chr->opaque)->transmit_timer);
+    timer_del( ((gnmouse_save *)chr->opaque)->transmit_timer);
+    timer_free(((gnmouse_save *)chr->opaque)->transmit_timer);
     /* free gnmouse_save struct */
     g_free(chr->opaque);
     g_free (chr);
@@ -245,7 +245,7 @@ static void gnmouse_handler (void *opaque)
     }
 
     /* reload timer */
-    qemu_mod_timer(save->transmit_timer, qemu_get_clock_ns(vm_clock) + save->transmit_time);
+    timer_mod(save->transmit_timer, qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL) + save->transmit_time);
     DPRINTF("mod_timer: %d\n", save->index);
     /* write date on serial port */
     qemu_chr_be_write(chr, &(data[save->index - 1]) , 1);
@@ -328,7 +328,7 @@ CharDriverState *qemu_chr_open_gnmouse (void)
     chr->chr_close = gnmouse_chr_close;
 
     /* create a new Qemu's timer with gnmouse_handler() as timeout handler. */
-    save->transmit_timer = qemu_new_timer_ns(vm_clock, (QEMUTimerCB *) gnmouse_handler, chr);
+    save->transmit_timer = timer_new_ns(QEMU_CLOCK_VIRTUAL, (QEMUTimerCB *) gnmouse_handler, chr);
     /* calculate the transmit_time for 1200 bauds transmission */
     save->transmit_time = (get_ticks_per_sec() / 1200) * 10; /* 1200 bauds */
     
