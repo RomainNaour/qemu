@@ -144,7 +144,8 @@ static NetClientInfo net_user_arcnet_info = {
     .cleanup = net_user_arcnet_cleanup,
 };
 
-int net_init_user_arcnet(QemuOpts *opts, const char *name, VLANState *vlan)
+int net_init_user_arcnet(QemuOpts *opts, const NetClientOptions *new_opts,
+                         const char *name, VLANState *vlan)
 {
     VLANClientState *nc;
     UserArcnetState *s;
