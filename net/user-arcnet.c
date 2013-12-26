@@ -145,18 +145,25 @@ static NetClientInfo net_user_arcnet_info = {
 };
 
 int net_init_user_arcnet(const NetClientOptions *opts, const char *name,
-                         VLANState *vlan)
+                         VLANClientState *peer)
 {
     VLANClientState *nc;
     UserArcnetState *s;
     const NetdevUserArcnetOptions *userArcnet;
+    int id;
+    int ret;
 
     assert(opts->kind == NET_CLIENT_OPTIONS_KIND_USER_ARCNET);
     userArcnet = opts->userArcnet;
+    
+    assert(peer);
 
-    dprintf("initialization (%s in vlan%d)\n", userArcnet->ifname, vlan->id);
+    ret = net_hub_id_for_client(peer, &id);
+    assert(ret == 0); /* peer must be on a hub */
 
-    nc = qemu_new_net_client(&net_user_arcnet_info, vlan, NULL, "user-arcnet", name);
+    dprintf("initialization (%s in vlan%d)\n", userArcnet->ifname, id);
+
+    nc = qemu_new_net_client(&net_user_arcnet_info, NULL, peer, "user-arcnet", name);
 
     s = DO_UPCAST(UserArcnetState, nc, nc);
 
@@ -181,7 +188,7 @@ int net_init_user_arcnet(const NetClientOptions *opts, const char *name,
                          net_user_arcnet_send, NULL, s);
 
     snprintf(nc->info_str, sizeof (nc->info_str), "arcnet user mode");
-    dprintf("vlan=%d, interface=%s, fd=%d\n", vlan->id, userArcnet->ifname, s->fd);
+    dprintf("vlan=%d, interface=%s, fd=%d\n", id, userArcnet->ifname, s->fd);
 
     return 0;
 }

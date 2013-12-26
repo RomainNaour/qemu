@@ -28,6 +28,7 @@
 #include "hub.h"
 #include "net/slirp.h"
 #include "net/eth.h"
+#include "net/user-arcnet.h"
 #include "util.h"
 
 #include "monitor/monitor.h"
@@ -734,6 +735,7 @@ static int (* const net_client_init_fun[NET_CLIENT_OPTIONS_KIND_MAX])(
         [NET_CLIENT_OPTIONS_KIND_BRIDGE]    = net_init_bridge,
 #endif
         [NET_CLIENT_OPTIONS_KIND_HUBPORT]   = net_init_hubport,
+        [NET_CLIENT_OPTIONS_KIND_USER_ARCNET] = net_init_user_arcnet,
 };
 
 
@@ -767,6 +769,7 @@ static int net_client_init1(const void *object, int is_netdev, Error **errp)
         case NET_CLIENT_OPTIONS_KIND_BRIDGE:
 #endif
         case NET_CLIENT_OPTIONS_KIND_HUBPORT:
+        case NET_CLIENT_OPTIONS_KIND_USER_ARCNET:
             break;
 
         default:
