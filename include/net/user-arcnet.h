@@ -8,7 +8,6 @@
 #include "net.h"
 #include "qemu-common.h"
 
-int net_init_user_arcnet(QemuOpts *opts, Monitor *mon,
-                         const char *name, VLANState *vlan);
+int net_init_user_arcnet(QemuOpts *opts, const char *name, VLANState *vlan);
 
 #endif /* QEMU_NET_USER_ARCNET_H */
