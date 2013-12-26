@@ -163,7 +163,7 @@ int net_init_user_arcnet(const NetClientOptions *opts, const char *name,
 
     dprintf("initialization (%s in vlan%d)\n", userArcnet->ifname, id);
 
-    nc = qemu_new_net_client(&net_user_arcnet_info, NULL, peer, "user-arcnet", name);
+    nc = qemu_new_net_client(&net_user_arcnet_info, peer, "user-arcnet", name);
 
     s = DO_UPCAST(UserArcnetState, nc, nc);
 
