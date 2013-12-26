@@ -28,7 +28,6 @@
 #include "hub.h"
 #include "net/slirp.h"
 #include "net/eth.h"
-#include "net/user-arcnet.h"
 #include "util.h"
 
 #include "monitor/monitor.h"

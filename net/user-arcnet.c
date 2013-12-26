@@ -19,7 +19,7 @@
 
 #include "qemu-char.h"
 
-#include "user-arcnet.h"
+#include "clients.h"
 #include "arcnet.h"
 
 #ifdef USER_ARCNET_DEBUG
