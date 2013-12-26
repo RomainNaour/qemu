@@ -138,23 +138,23 @@ static void net_user_arcnet_cleanup(VLANClientState *nc)
 }
 
 static NetClientInfo net_user_arcnet_info = {
-    .type = NET_CLIENT_TYPE_USER_ARCNET,
+    .type = NET_CLIENT_OPTIONS_KIND_USER_ARCNET,
     .size = sizeof (UserArcnetState),
     .receive = net_user_arcnet_receive,
     .cleanup = net_user_arcnet_cleanup,
 };
 
-int net_init_user_arcnet(QemuOpts *opts, const NetClientOptions *new_opts,
-                         const char *name, VLANState *vlan)
+int net_init_user_arcnet(const NetClientOptions *opts, const char *name,
+                         VLANState *vlan)
 {
     VLANClientState *nc;
     UserArcnetState *s;
-    const char *ifname;
+    const NetdevUserArcnetOptions *userArcnet;
 
-    if ((ifname = qemu_opt_get(opts, "ifname")) == NULL)
-        ifname = "arc0";
+    assert(opts->kind == NET_CLIENT_OPTIONS_KIND_USER_ARCNET);
+    userArcnet = opts->userArcnet;
 
-    dprintf("initialization (%s in vlan%d)\n", ifname, vlan->id);
+    dprintf("initialization (%s in vlan%d)\n", userArcnet->ifname, vlan->id);
 
     nc = qemu_new_net_client(&net_user_arcnet_info, vlan, NULL, "user-arcnet", name);
 
@@ -168,11 +168,11 @@ int net_init_user_arcnet(QemuOpts *opts, const NetClientOptions *new_opts,
     }
     /* store address of the specified interface */
     s->address.sa_family = ARPHRD_ARCNET;
-    strcpy(s->address.sa_data, ifname);
+    strcpy(s->address.sa_data, userArcnet->ifname);
 
     /* listen the specified interface */
     if (bind(s->fd, &s->address, sizeof (s->address))) {
-        dperror("bind on %s: ", ifname);
+        dperror("bind on %s: ", userArcnet->ifname);
         return -1;
     }
 
@@ -181,7 +181,7 @@ int net_init_user_arcnet(QemuOpts *opts, const NetClientOptions *new_opts,
                          net_user_arcnet_send, NULL, s);
 
     snprintf(nc->info_str, sizeof (nc->info_str), "arcnet user mode");
-    dprintf("vlan=%d, interface=%s, fd=%d\n", vlan->id, ifname, s->fd);
+    dprintf("vlan=%d, interface=%s, fd=%d\n", vlan->id, userArcnet->ifname, s->fd);
 
     return 0;
 }

@@ -9,7 +9,7 @@
 #include "qemu-common.h"
 #include "qapi-types.h"
 
-int net_init_user_arcnet(QemuOpts *opts, const NetClientOptions *new_opts,
-                         const char *name, VLANState *vlan);
+int net_init_user_arcnet(const NetClientOptions *opts, const char *name,
+                         VLANState *vlan)
 
 #endif /* QEMU_NET_USER_ARCNET_H */

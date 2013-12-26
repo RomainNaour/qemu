@@ -3009,6 +3009,19 @@
     'hubid':     'int32' } }
 
 ##
+# @NetdevUserArcnetOptions
+#
+# Connects an emulated arcnet device and a Linux arcnet interface of the host.
+#
+# @ifname: #optional interface name (arc0)
+#
+# Since 1.8
+##
+{ 'type': 'NetdevUserArcnetOptions',
+  'data': {
+    '*ifname':  'str' } }
+
+##
 # @NetdevNetmapOptions
 #
 # Connect a client to a netmap-enabled NIC or to a VALE switch port
@@ -3047,7 +3060,8 @@
     'dump':     'NetdevDumpOptions',
     'bridge':   'NetdevBridgeOptions',
     'hubport':  'NetdevHubPortOptions',
-    'netmap':   'NetdevNetmapOptions' } }
+    'netmap':   'NetdevNetmapOptions',
+    'userArcnet': 'NetdevUserArcnetOptions' } }
 
 ##
 # @NetLegacy
