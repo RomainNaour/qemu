@@ -42,12 +42,6 @@ do { fprintf(stderr, "gnmouse: " fmt , ## __VA_ARGS__); } while (0)
 do {} while (0)
 #endif
 
-/* 
- * This define is used for slow down the speed of the mouse.
- * dx and dy values are dropped two out of three time when GENIUS_MOUSE_DROP = 3.
- */
-#define GENIUS_MOUSE_DROP 3
-
 /*
  * struct gnmouse_save:
  * This structure is used to save private info for Genius mouse.
@@ -272,20 +266,10 @@ static void gnmouse_event(void *opaque,
     CharDriverState *chr = (CharDriverState *)opaque;
     gnmouse_save *save = (gnmouse_save *)chr->opaque;
     char BP = 0x80;
-    static int drop = 1;
-    
-    /* slow down the speed of the mouse */
-    if(drop % GENIUS_MOUSE_DROP){
-      drop += 1;
-      /* drop deltas */
-      save->dx +=  0;
-      save->dy +=  0;
-    }else{
-      drop = 1;
-      /* save deltas */
-      save->dx +=  dx;
-      save->dy +=  dy;
-    }
+
+    /* save deltas */
+    save->dx +=  dx;
+    save->dy +=  dy;
 
     DPRINTF("dx= %d; dy= %d; buttons=%x\n", dx, dy, buttons_state);
 
