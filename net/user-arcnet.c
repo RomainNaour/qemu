@@ -41,13 +41,13 @@ typedef struct archdr ArcnetPacket;
 
 /* arcnet connection between the emulator and the host interface */
 typedef struct UserArcnetState {
-    VLANClientState nc;
+    NetClientState nc;
     int fd;
     struct sockaddr address;
 } UserArcnetState;
 
 /* send a packet from the emulator vlan to the host */
-static ssize_t net_user_arcnet_receive(VLANClientState *nc, const uint8_t *buf, size_t size)
+static ssize_t net_user_arcnet_receive(NetClientState *nc, const uint8_t *buf, size_t size)
 {
     UserArcnetState *s = DO_UPCAST(UserArcnetState, nc, nc);
     ArcnetPacket *linux_buf = (ArcnetPacket*)buf;
@@ -130,7 +130,7 @@ static void net_user_arcnet_send(void *opaque)
     qemu_send_packet(&s->nc, buf, size);
 }
 
-static void net_user_arcnet_cleanup(VLANClientState *nc)
+static void net_user_arcnet_cleanup(NetClientState *nc)
 {
     UserArcnetState *s = DO_UPCAST(UserArcnetState, nc, nc);
     qemu_set_fd_handler(s->fd, NULL, NULL, NULL);
@@ -145,9 +145,9 @@ static NetClientInfo net_user_arcnet_info = {
 };
 
 int net_init_user_arcnet(const NetClientOptions *opts, const char *name,
-                         VLANClientState *peer)
+                         NetClientState *peer)
 {
-    VLANClientState *nc;
+    NetClientState *nc;
     UserArcnetState *s;
     const NetdevUserArcnetOptions *userArcnet;
     int id;

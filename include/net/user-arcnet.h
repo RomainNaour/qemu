@@ -10,6 +10,6 @@
 #include "qapi-types.h"
 
 int net_init_user_arcnet(const NetClientOptions *opts, const char *name,
-                         VLANState *peer)
+                         NetClientState *peer)
 
 #endif /* QEMU_NET_USER_ARCNET_H */
