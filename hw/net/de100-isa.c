@@ -530,7 +530,7 @@ static const MemoryRegionOps de100_mmio_ops = {
  */
 static void de100_isa_cleanup(NetClientState *nc)
 {
-    PCNetState *d = DO_UPCAST(NICState, nc, nc)->opaque;
+    PCNetState *d = qemu_get_nic_opaque(nc);
 
     pcnet_common_cleanup(d);
 }

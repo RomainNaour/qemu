@@ -27,7 +27,7 @@ typedef struct ISACOM90C65State {
 
 static void isa_com90c65_cleanup(NetClientState *nc)
 {
-    COM90C65State *s = DO_UPCAST(NICState, nc, nc)->opaque;
+    COM90C65State *s = qemu_get_nic_opaque(nc);
 
     s->nic = NULL;
 }
