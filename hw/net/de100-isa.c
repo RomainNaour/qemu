@@ -819,6 +819,7 @@ static void de100_isa_class_init(ObjectClass *klass, void *data)
     dc->reset = de100_isa_reset;
     dc->vmsd = &de100_isa_vmstate;
     dc->props = de100_isa_properties;
+    set_bit(DEVICE_CATEGORY_NETWORK, dc->categories);
 }
 
 static const TypeInfo de100_isa_info = {

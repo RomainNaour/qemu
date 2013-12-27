@@ -114,6 +114,7 @@ static void isa_com90c65_class_initfn(ObjectClass *klass, void *data)
     ISADeviceClass *ic = ISA_DEVICE_CLASS(klass);
     ic->init = isa_com90c65_initfn;
     dc->props = com90c65_isa_properties;
+    set_bit(DEVICE_CATEGORY_NETWORK, dc->categories);
 }
 
 static const TypeInfo com90c65_isa_info = {
