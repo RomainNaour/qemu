@@ -468,7 +468,7 @@ static const MemoryRegionOps com90c65_io_ops = {
 
 void com90c65_setup_io(COM90C65State *s, unsigned size)
 {
-    memory_region_init_io(&s->io, &com90c65_io_ops, s, "com90c65-io", size);
+    memory_region_init_io(&s->io, NULL, &com90c65_io_ops, s, "com90c65-io", size);
 }
 
 static const MemoryRegionOps com90c65_mmio_ops = {
@@ -479,5 +479,5 @@ static const MemoryRegionOps com90c65_mmio_ops = {
 
 void com90c65_setup_mmio(COM90C65State *s, unsigned size)
 {
-    memory_region_init_io(&s->mmio, &com90c65_mmio_ops, s, "com90c65-mmio", size);
+    memory_region_init_io(&s->mmio, NULL, &com90c65_mmio_ops, s, "com90c65-mmio", size);
 }

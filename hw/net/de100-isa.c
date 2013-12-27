@@ -685,7 +685,7 @@ static int de100_isa_init(ISADevice *dev)
     }
 
     /* Handler for memory-mapped I/O */
-    memory_region_init_io(&isa->io, &de100_io_ops, isa, "de100-io", 0x10);
+    memory_region_init_io(&isa->io, NULL, &de100_io_ops, isa, "de100-io", 0x10);
     isa_register_ioport(dev, &isa->io, isa->iobase);
 
     /* Allocate the total DE100 memory of two 32KB RAM. */
@@ -705,7 +705,7 @@ static int de100_isa_init(ISADevice *dev)
     }
 
 #ifdef DEBUG_DE100_MMIO
-    memory_region_init_io(&isa->mmio_dbg, &de100_mmio_ops, isa,
+    memory_region_init_io(&isa->mmio_dbg, NULL, &de100_mmio_ops, isa,
 			  "de100-mmio-dbg", isa->mmiosize * 1024);
 
     memory_region_add_subregion_overlap(isa_address_space(dev),
