@@ -1038,8 +1038,8 @@ ssize_t pcnet_receive(NetClientState *nc, const uint8_t *buf, size_t size_)
     printf("pcnet_receive size=%d\n", size);
 #endif
 
-    /* if too small buffer, then expand it */
-    if (size < MIN_BUF_SIZE) {
+    /* if too small buffer, then expand it but not in loopback mode */
+    if ((!s->looptest) && (size < MIN_BUF_SIZE)) {
         memcpy(buf1, buf, size);
         memset(buf1 + size, 0, MIN_BUF_SIZE - size);
         buf = buf1;
@@ -1097,7 +1097,7 @@ ssize_t pcnet_receive(NetClientState *nc, const uint8_t *buf, size_t size_)
                 src[size + 3] = 0;
                 size += 4;
             } else if (s->looptest == PCNET_LOOPTEST_CRC ||
-                       !CSR_DXMTFCS(s) || size < MIN_BUF_SIZE+4) {
+                       !CSR_DXMTFCS(s)) {
                 uint32_t fcs = ~0;
                 uint8_t *p = src;
 
