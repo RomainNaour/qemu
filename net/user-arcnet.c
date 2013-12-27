@@ -17,7 +17,7 @@
 #include <net/if_arp.h>
 #include <linux/if_arcnet.h>
 
-#include "char/char.h"
+#include "sysemu/char.h"
 
 #include "clients.h"
 #include "arcnet.h"
