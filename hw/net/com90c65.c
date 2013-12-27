@@ -145,7 +145,7 @@ static void com90c65_send(COM90C65State *s, int page) {
 
     /* send to other clients of the vlan,
      * it should be received by an arcnet layer */
-    qemu_send_packet(&s->nic->nc, buffer, size);
+    qemu_send_packet(qemu_get_queue(s->nic), buffer, size);
 }
 
 /* receive a packet from the vlan to the specified memory page */
