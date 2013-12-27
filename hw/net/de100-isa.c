@@ -5,9 +5,9 @@
  * LC Ethernet Controller.
  */
 
-#include "isa.h"
-#include "net.h"
-#include "pcnet.h"
+#include "hw/isa/isa.h"
+#include "net/net.h"
+#include "hw/net/pcnet.h"
 #include "qemu-common.h"
 
 #include "hw/loader.h"

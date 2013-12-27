@@ -17,11 +17,11 @@
  * A receive comes from the vlan to the driver.
  */
 
-#include "hw.h"
-#include "isa.h"
-#include "pc.h"
-#include "net.h"
-#include "com90c65.h"
+#include "hw/hw.h"
+#include "hw/isa/isa.h"
+#include "hw/i386/pc.h"
+#include "net/net.h"
+#include "hw/net/com90c65.h"
 
 /* map the register variables with 2 arrays for read and write access */
 void com90c65_registers_access_init(COM90C65State *s) {

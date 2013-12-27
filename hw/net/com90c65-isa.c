@@ -5,12 +5,12 @@
  * it uses the generic code of the file com90c65.c.
  */
 
-#include "hw.h"
-#include "pc.h"
-#include "isa.h"
-#include "qdev.h"
-#include "net.h"
-#include "com90c65.h"
+#include "hw/hw.h"
+#include "hw/isa/isa.h"
+#include "hw/i386/pc.h"
+#include "monitor/qdev.h"
+#include "net/net.h"
+#include "hw/net/com90c65.h"
 
 /* default I/O addresses */
 #define IO_BASES_MAX 8
