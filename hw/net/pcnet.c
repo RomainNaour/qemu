@@ -77,6 +77,7 @@ struct qemu_ether_header {
 #define CSR_DTX(S)       !!(((S)->csr[15])&0x0002)
 #define CSR_LOOP(S)      !!(((S)->csr[15])&0x0004)
 #define CSR_DXMTFCS(S)   !!(((S)->csr[15])&0x0008)
+#define CSR_FCOLL(S)     !!(((S)->csr[15])&0x0010)
 #define CSR_INTL(S)      !!(((S)->csr[15])&0x0040)
 #define CSR_DRCVPA(S)    !!(((S)->csr[15])&0x2000)
 #define CSR_DRCVBC(S)    !!(((S)->csr[15])&0x4000)
@@ -1245,6 +1246,11 @@ static void pcnet_transmit(PCNetState *s)
             SET_FIELD(&tmd.status, TMDS, ERR, 1);
             SET_FIELD(&tmd.status, TMDS, OWN, 0);
             s->csr[0] |= 0xa000; /* ERR | CERR */
+            s->xmit_pos = -1;
+            goto txdone;
+        }
+        if (CSR_LOOP(s) && CSR_FCOLL(s)) {
+            SET_FIELD(&tmd.misc, TMDM, RTRY, 1);
             s->xmit_pos = -1;
             goto txdone;
         }
