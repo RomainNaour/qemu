@@ -1103,7 +1103,7 @@ ssize_t pcnet_receive(NetClientState *nc, const uint8_t *buf, size_t size_)
 
                 while (p != &src[size])
                     CRC(fcs, *p++);
-                *(uint32_t *)p = htonl(fcs);
+                *(uint32_t *)p = ~(fcs);
                 size += 4;
             } else {
                 uint32_t fcs = ~0;
@@ -1111,7 +1111,7 @@ ssize_t pcnet_receive(NetClientState *nc, const uint8_t *buf, size_t size_)
 
                 while (p != &src[size-4])
                     CRC(fcs, *p++);
-                crc_err = (*(uint32_t *)p != htonl(fcs));
+                crc_err = (*(uint32_t *)p != ~(fcs));
             }
 
 #ifdef PCNET_DEBUG_MATCH
