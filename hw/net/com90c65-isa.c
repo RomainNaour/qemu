@@ -33,7 +33,7 @@ static void isa_com90c65_cleanup(VLANClientState *nc)
 }
 
 static NetClientInfo net_com90c65_isa_info = {
-    .type = NET_CLIENT_TYPE_NIC,
+    .type = NET_CLIENT_OPTIONS_KIND_NIC,
     .size = sizeof (NICState),
     .can_receive = com90c65_can_receive,
     .receive = com90c65_receive,

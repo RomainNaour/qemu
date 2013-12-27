@@ -536,7 +536,7 @@ static void de100_isa_cleanup(VLANClientState *nc)
 }
 
 static NetClientInfo net_de100_isa_info = {
-    .type = NET_CLIENT_TYPE_NIC,
+    .type = NET_CLIENT_OPTIONS_KIND_NIC,
     .size = sizeof(NICState),
     .can_receive = pcnet_can_receive,
     .receive = pcnet_receive,
