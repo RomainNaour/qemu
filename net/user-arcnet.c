@@ -49,7 +49,7 @@ typedef struct UserArcnetState {
 /* send a packet from the emulator vlan to the host */
 static ssize_t net_user_arcnet_receive(NetClientState *nc, const uint8_t *buf, size_t size)
 {
-    UserArcnetState *s = DO_UPCAST(UserArcnetState, nc, nc);
+    UserArcnetState *s = qemu_get_nic(nc);
     ArcnetPacket *linux_buf = (ArcnetPacket*)buf;
     int data_length, length;
     ssize_t sent;
@@ -132,7 +132,7 @@ static void net_user_arcnet_send(void *opaque)
 
 static void net_user_arcnet_cleanup(NetClientState *nc)
 {
-    UserArcnetState *s = DO_UPCAST(UserArcnetState, nc, nc);
+    UserArcnetState *s = qemu_get_nic(nc);
     qemu_set_fd_handler(s->fd, NULL, NULL, NULL);
     close(s->fd);
 }
@@ -165,7 +165,7 @@ int net_init_user_arcnet(const NetClientOptions *opts, const char *name,
 
     nc = qemu_new_net_client(&net_user_arcnet_info, peer, "user-arcnet", name);
 
-    s = DO_UPCAST(UserArcnetState, nc, nc);
+    s = qemu_get_nic(nc);
 
     /* open a raw socket */
     s->fd = socket(PF_PACKET, SOCK_PACKET, htons(ETH_P_ARCNET));
