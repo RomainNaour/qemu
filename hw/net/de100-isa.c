@@ -288,7 +288,7 @@ static void de100_ram_select(ISADE100State* isa)
  * @param val value to write
  * @param size size of the val (should be 2 bytes for this device)
  */
-static void de100_io_write(void *opaque, target_phys_addr_t addr,
+static void de100_io_write(void *opaque, hwaddr addr,
                            uint64_t val, unsigned size)
 {
     ISADE100State *isa = opaque;
@@ -362,7 +362,7 @@ static uint8_t de100_get_hw_addr(ISADE100State *isa)
  *
  * @return read value
  */
-static uint64_t de100_io_read(void *opaque, target_phys_addr_t addr,
+static uint64_t de100_io_read(void *opaque, hwaddr addr,
                               unsigned size)
 {
     ISADE100State *isa = opaque;
@@ -414,7 +414,7 @@ static const MemoryRegionOps de100_io_ops = {
  * @param val value to write
  * @param size size of the val
  */
-static void de100_mmio_write(void *opaque, target_phys_addr_t addr,
+static void de100_mmio_write(void *opaque, hwaddr addr,
                            uint64_t val, unsigned size)
 {
     ISADE100State *isa = opaque;
@@ -466,7 +466,7 @@ static void de100_mmio_write(void *opaque, target_phys_addr_t addr,
  *
  * @return read value
  */
-static uint64_t de100_mmio_read(void *opaque, target_phys_addr_t addr,
+static uint64_t de100_mmio_read(void *opaque, hwaddr addr,
                               unsigned size)
 {
     ISADE100State *isa = opaque;
@@ -565,12 +565,12 @@ static const VMStateDescription de100_isa_vmstate = {
  * @param len length of the data
  * @param do_bswap not used
  */
-static void isa_physical_memory_write(void *dma_opaque, target_phys_addr_t addr,
+static void isa_physical_memory_write(void *dma_opaque, hwaddr addr,
                                       uint8_t *buf, int len, int do_bswap)
 {
     ISADE100State* isa = (ISADE100State*) dma_opaque;
     uint8_t *ptr = memory_region_get_ram_ptr(&isa->mmio);
-    target_phys_addr_t addr2=addr&LA_MASK;
+    hwaddr addr2=addr&LA_MASK;
     if ((addr2+len)>(2*RAM_SIZE))
     {
         fprintf(stderr, "de100: LANCE reading out of memory boundaries addr=0x%" PRIx64 " len=%d\n", addr2, len);
@@ -607,12 +607,12 @@ static void isa_physical_memory_write(void *dma_opaque, target_phys_addr_t addr,
  * @param len length of the data
  * @param do_bswap not used
  */
-static void isa_physical_memory_read(void *dma_opaque, target_phys_addr_t addr,
+static void isa_physical_memory_read(void *dma_opaque, hwaddr addr,
                                      uint8_t *buf, int len, int do_bswap)
 {
     ISADE100State* isa = (ISADE100State*) dma_opaque;
     uint8_t *ptr = memory_region_get_ram_ptr(&isa->mmio);
-    target_phys_addr_t addr2=addr&LA_MASK;
+    hwaddr addr2=addr&LA_MASK;
     if ((addr2+len)>(2*RAM_SIZE))
     {
         fprintf(stderr, "de100: LANCE reading out of memory boundaries addr=0x%" PRIx64 " len=%d\n", addr2, len);

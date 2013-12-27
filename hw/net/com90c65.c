@@ -403,7 +403,7 @@ static void com90c65_ioport_write16(void *user_data, uint32_t address, uint32_t 
 }
 
 /* read from memory mapped */
-static uint64_t com90c65_mmio_read(void *opaque, target_phys_addr_t addr, unsigned size) {
+static uint64_t com90c65_mmio_read(void *opaque, hwaddr addr, unsigned size) {
     COM90C65State *s = opaque;
     uint32_t value = 0;
     int offset;
@@ -416,7 +416,7 @@ static uint64_t com90c65_mmio_read(void *opaque, target_phys_addr_t addr, unsign
 }
 
 /* write to memory mapped */
-static void com90c65_mmio_write(void *opaque, target_phys_addr_t addr, uint64_t data, unsigned size) {
+static void com90c65_mmio_write(void *opaque, hwaddr addr, uint64_t data, unsigned size) {
     COM90C65State *s = opaque;
     uint32_t value = data;
     int offset;
@@ -427,7 +427,7 @@ static void com90c65_mmio_write(void *opaque, target_phys_addr_t addr, uint64_t 
         s->mem[addr + offset] = value >> (offset << 3) & 0xff;
 }
 
-static uint64_t com90c65_read(void *opaque, target_phys_addr_t addr,
+static uint64_t com90c65_read(void *opaque, hwaddr addr,
                               unsigned size)
 {
     COM90C65State *s = opaque;
@@ -444,7 +444,7 @@ static uint64_t com90c65_read(void *opaque, target_phys_addr_t addr,
     return ((uint64_t)1 << (size * 8)) - 1;
 }
 
-static void com90c65_write(void *opaque, target_phys_addr_t addr,
+static void com90c65_write(void *opaque, hwaddr addr,
                            uint64_t data, unsigned size)
 {
     COM90C65State *s = opaque;
