@@ -2,6 +2,9 @@
  * QEMU ARCnet COM90C66 emulation
  */
 
+#ifndef HW_COM90C66_H
+#define HW_COM90C66_H 1
+
 #include "arcnet.h"
 
 /* name of the device (debug usage) */
@@ -172,3 +175,5 @@ void com90c65_registers_access_init(COM90C65State *s);
 void com90c65_reset(void *user_data);
 int com90c65_can_receive(NetClientState *nc);
 ssize_t com90c65_receive(NetClientState *nc, const uint8_t *buffer, size_t size_);
+
+#endif
