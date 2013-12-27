@@ -398,7 +398,7 @@ static uint64_t de100_io_read(void *opaque, hwaddr addr,
 static const MemoryRegionOps de100_io_ops = {
     .read = de100_io_read,
     .write = de100_io_write,
-    .endianness = DEVICE_NATIVE_ENDIAN,
+    .endianness = DEVICE_LITTLE_ENDIAN,
     .valid = {
         .min_access_size = 2,
         .max_access_size = 2,
@@ -516,7 +516,7 @@ static uint64_t de100_mmio_read(void *opaque, hwaddr addr,
 static const MemoryRegionOps de100_mmio_ops = {
     .read = de100_mmio_read,
     .write = de100_mmio_write,
-    .endianness = DEVICE_NATIVE_ENDIAN,
+    .endianness = DEVICE_LITTLE_ENDIAN,
     .valid = {
         .min_access_size = 1,
         .max_access_size = 4,

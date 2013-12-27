@@ -463,7 +463,7 @@ static void com90c65_write(void *opaque, hwaddr addr,
 static const MemoryRegionOps com90c65_io_ops = {
     .read = com90c65_read,
     .write = com90c65_write,
-    .endianness = DEVICE_NATIVE_ENDIAN,
+    .endianness = DEVICE_LITTLE_ENDIAN,
 };
 
 void com90c65_setup_io(COM90C65State *s, unsigned size)
@@ -474,7 +474,7 @@ void com90c65_setup_io(COM90C65State *s, unsigned size)
 static const MemoryRegionOps com90c65_mmio_ops = {
     .read = com90c65_mmio_read,
     .write = com90c65_mmio_write,
-    .endianness = DEVICE_NATIVE_ENDIAN,
+    .endianness = DEVICE_LITTLE_ENDIAN,
 };
 
 void com90c65_setup_mmio(COM90C65State *s, unsigned size)
