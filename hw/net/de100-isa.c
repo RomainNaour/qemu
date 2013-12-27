@@ -821,7 +821,7 @@ static void de100_isa_class_init(ObjectClass *klass, void *data)
     dc->props = de100_isa_properties;
 }
 
-static TypeInfo de100_isa_info = {
+static const TypeInfo de100_isa_info = {
     .name = "de100_isa",
     .parent = TYPE_ISA_DEVICE,
     .instance_size = sizeof(ISADE100State),

@@ -116,7 +116,7 @@ static void isa_com90c65_class_initfn(ObjectClass *klass, void *data)
     dc->props = com90c65_isa_properties;
 }
 
-static TypeInfo com90c65_isa_info = {
+static const TypeInfo com90c65_isa_info = {
     .name          = "com90c65_isa",
     .parent        = TYPE_ISA_DEVICE,
     .instance_size = sizeof (ISACOM90C65State),
