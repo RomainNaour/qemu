@@ -528,7 +528,7 @@ static const MemoryRegionOps de100_mmio_ops = {
  * cleanup function, registered in net_de100_isa_info structure.
  * only used to call pcnet cleanup function: pcnet_common_cleanup.
  */
-static void de100_isa_cleanup(VLANClientState *nc)
+static void de100_isa_cleanup(NetClientState *nc)
 {
     PCNetState *d = DO_UPCAST(NICState, nc, nc)->opaque;
 

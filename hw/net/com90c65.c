@@ -149,7 +149,7 @@ static void com90c65_send(COM90C65State *s, int page) {
 }
 
 /* receive a packet from the vlan to the specified memory page */
-ssize_t com90c65_receive(VLANClientState *nc, const uint8_t *buffer, size_t size_)
+ssize_t com90c65_receive(NetClientState *nc, const uint8_t *buffer, size_t size_)
 {
     COM90C65State *s = DO_UPCAST(NICState, nc, nc)->opaque;
     int size = size_;
@@ -177,7 +177,7 @@ ssize_t com90c65_receive(VLANClientState *nc, const uint8_t *buffer, size_t size
 }
 
 /* the arcnet layer send a packet to the vlan only when the device is ready to receive */
-int com90c65_can_receive(VLANClientState *nc)
+int com90c65_can_receive(NetClientState *nc)
 {
     COM90C65State *s = DO_UPCAST(NICState, nc, nc)->opaque;
     return (s->status & BIT_RI) == 0;

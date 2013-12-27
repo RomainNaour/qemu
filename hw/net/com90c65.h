@@ -170,5 +170,5 @@ void com90c65_setup_io(COM90C65State *s, unsigned size);
 void com90c65_setup_mmio(COM90C65State *s, unsigned size);
 void com90c65_registers_access_init(COM90C65State *s);
 void com90c65_reset(void *user_data);
-int com90c65_can_receive(VLANClientState *nc);
-ssize_t com90c65_receive(VLANClientState *nc, const uint8_t *buffer, size_t size_);
+int com90c65_can_receive(NetClientState *nc);
+ssize_t com90c65_receive(NetClientState *nc, const uint8_t *buffer, size_t size_);

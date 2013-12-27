@@ -25,7 +25,7 @@ typedef struct ISACOM90C65State {
     COM90C65State com90c65;
 } ISACOM90C65State;
 
-static void isa_com90c65_cleanup(VLANClientState *nc)
+static void isa_com90c65_cleanup(NetClientState *nc)
 {
     COM90C65State *s = DO_UPCAST(NICState, nc, nc)->opaque;
 
