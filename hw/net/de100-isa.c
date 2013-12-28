@@ -12,34 +12,35 @@
 
 #include "hw/loader.h"
 
-#define DE100_DEVICE "de100"
+#define TYPE_ISA_DE100 "de100"
+#define ISA_DE100(obj) OBJECT_CHECK(ISADE100State, (obj), TYPE_ISA_DE100)
 
 #ifdef DEBUG_DE100
-# define DPRINTF(fmt, args...) fprintf(stderr, DE100_DEVICE ": " fmt, ## args)
+# define DPRINTF(fmt, args...) fprintf(stderr, TYPE_ISA_DE100 ": " fmt, ## args)
 #else
 # define DPRINTF(fmt, args...) do {} while (0)
 #endif /* !DEBUG_DE100 */
 
 #ifdef DEBUG_DE100_INTERNALS
-# define DPRINTF_INT(fmt, args...) fprintf(stderr, DE100_DEVICE ": " fmt, ## args)
+# define DPRINTF_INT(fmt, args...) fprintf(stderr, TYPE_ISA_DE100 ": " fmt, ## args)
 #else
 # define DPRINTF_INT(fmt, args...) do {} while (0)
 #endif /* !DEBUG_DE100 */
 
 #ifdef DEBUG_DE100_IO
-# define DPRINTF_IO(fmt, args...) fprintf(stderr, DE100_DEVICE ": " fmt, ## args)
+# define DPRINTF_IO(fmt, args...) fprintf(stderr, TYPE_ISA_DE100 ": " fmt, ## args)
 #else
 # define DPRINTF_IO(fmt, args...) do {} while (0)
 #endif /* !DEBUG_DE100_IO */
 
 #ifdef DEBUG_DE100_MMIO
-# define DPRINTF_MMIO(fmt, args...) fprintf(stderr, DE100_DEVICE ": " fmt, ## args)
+# define DPRINTF_MMIO(fmt, args...) fprintf(stderr, TYPE_ISA_DE100 ": " fmt, ## args)
 #else
 # define DPRINTF_MMIO(fmt, args...) do {} while (0)
 #endif /* !DEBUG_DE100_MMIO */
 
 #ifdef DEBUG_DE100_ROM
-# define DPRINTF_ROM(fmt, args...) fprintf(stderr, DE100_DEVICE ": " fmt, ## args)
+# define DPRINTF_ROM(fmt, args...) fprintf(stderr, TYPE_ISA_DE100 ": " fmt, ## args)
 #else
 # define DPRINTF_ROM(fmt, args...) do {} while (0)
 #endif /* !DEBUG_DE100_ROM */
@@ -100,7 +101,7 @@ unsigned char	rom_signature[ROM_SIGNATURE_SIZE] = {
 };
 
 typedef struct ISADE100State {
-    ISADevice dev;
+    ISADevice parent_obj;
     PCNetState state;           /**< state of the Am7990 chip */
 
     uint32_t iobase;            /**< Base address of I/O ports */
@@ -452,7 +453,7 @@ static void de100_mmio_write(void *opaque, hwaddr addr,
         *((uint8_t*)(ptr+addr))= val;
         break;
     default:
-        hw_error(DE100_DEVICE ": unexpected %s with size = %u", __func__, size);
+        hw_error(TYPE_ISA_DE100 ": unexpected %s with size = %u", __func__, size);
         break;
     }
 }
@@ -503,7 +504,7 @@ static uint64_t de100_mmio_read(void *opaque, hwaddr addr,
         val = *((uint8_t*)(ptr+addr));
         break;
     default:
-        hw_error(DE100_DEVICE ": unexpected %s with size = %u", __func__, size);
+        hw_error(TYPE_ISA_DE100 ": unexpected %s with size = %u", __func__, size);
         break;
     }
     if (isromaccess) {
@@ -668,7 +669,7 @@ static void de100_isa_request_irq(void *opaque, int irq, int level)
  */
 static int de100_isa_init(ISADevice *dev)
 {
-    ISADE100State *isa = DO_UPCAST(ISADE100State, dev, dev);
+    ISADE100State *isa = ISA_DE100(dev);
     PCNetState *s = &isa->state;
     qemu_irq* irq = NULL;
 
@@ -823,10 +824,10 @@ static void de100_isa_class_init(ObjectClass *klass, void *data)
 }
 
 static const TypeInfo de100_isa_info = {
-    .name = "de100_isa",
-    .parent = TYPE_ISA_DEVICE,
+    .name          = TYPE_ISA_DE100,
+    .parent        = TYPE_ISA_DEVICE,
     .instance_size = sizeof(ISADE100State),
-    .class_init = de100_isa_class_init,
+    .class_init    = de100_isa_class_init,
 };
 
 static void de100_isa_register_types(void)
