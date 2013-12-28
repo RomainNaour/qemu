@@ -62,22 +62,26 @@ static void isa_com90c65_realizefn(DeviceState *dev, Error **errp)
     ISACOM90C65State *isa = ISA_COM90C65(dev);
     COM90C65State *s = &isa->com90c65;
 
+#if 0
+    // struct NICConf n'a plus de champ vlan
     if (s->c.vlan) {
-        dprintf("initialization (" COM90C65_DEVICE " in vlan%d)\n",
-                s->c.vlan->id);
+        dprintf("initialization (" COM90C65_DEVICE " in vlan%d)\n", s->c.vlan);
+
         dprintf("iobase=0x%x, irq=%d, mmiobase=0x%x, nodeid=%d\n",
                 isa->iobase, isa->isairq, isa->mmiobase, isa->nodeid);
     }
+#endif
 
     if (com90c65_set_io_select(s, isa->iobase) != 0) {
         eprintf("bad I/O address: %X\n", isa->iobase);
-        return -1;
+        return;
     }
+
 
     com90c65_setup_io(s, REGISTERS_SIZE);
     isa_register_ioport(isadev, &s->io, isa->iobase);
     com90c65_setup_mmio(s, MEM_SIZE);
-    memory_region_add_subregion_overlap(isa_address_space(dev),
+    memory_region_add_subregion_overlap(isa_address_space(isadev),
                                         isa->mmiobase, &s->mmio, 2);
 
     isa_init_irq(isadev, &s->irq, isa->isairq);
@@ -99,7 +103,7 @@ static void isa_com90c65_realizefn(DeviceState *dev, Error **errp)
     qemu_register_reset(com90c65_reset, s);
 
     s->nic = qemu_new_nic(&net_com90c65_isa_info, &s->c,
-                          object_get_typename(OBJECT(dev)), dev->qdev.id, s);
+                          object_get_typename(OBJECT(dev)), dev->id, s);
 }
 
 static Property com90c65_isa_properties[] = {
