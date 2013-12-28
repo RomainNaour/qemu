@@ -56,7 +56,9 @@ static int com90c65_set_io_select(COM90C65State *s, int io_base)
     return -1 ;
 }
 
-static int isa_com90c65_initfn(ISADevice *dev) {
+static void isa_com90c65_realizefn(DeviceState *dev, Error **errp)
+{
+    ISADevice *isadev = ISA_DEVICE(dev);
     ISACOM90C65State *isa = ISA_COM90C65(dev);
     COM90C65State *s = &isa->com90c65;
 
@@ -73,12 +75,12 @@ static int isa_com90c65_initfn(ISADevice *dev) {
     }
 
     com90c65_setup_io(s, REGISTERS_SIZE);
-    isa_register_ioport(dev, &s->io, isa->iobase);
+    isa_register_ioport(isadev, &s->io, isa->iobase);
     com90c65_setup_mmio(s, MEM_SIZE);
     memory_region_add_subregion_overlap(isa_address_space(dev),
                                         isa->mmiobase, &s->mmio, 2);
 
-    isa_init_irq(dev, &s->irq, isa->isairq);
+    isa_init_irq(isadev, &s->irq, isa->isairq);
 
     if (isa->nodeid > UCHAR_MAX)
         qemu_macaddr_default_if_unset(&s->c.macaddr);
@@ -98,8 +100,6 @@ static int isa_com90c65_initfn(ISADevice *dev) {
 
     s->nic = qemu_new_nic(&net_com90c65_isa_info, &s->c,
                           object_get_typename(OBJECT(dev)), dev->qdev.id, s);
-
-    return 0;
 }
 
 static Property com90c65_isa_properties[] = {
@@ -114,8 +114,8 @@ static Property com90c65_isa_properties[] = {
 static void isa_com90c65_class_initfn(ObjectClass *klass, void *data)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
-    ISADeviceClass *ic = ISA_DEVICE_CLASS(klass);
-    ic->init = isa_com90c65_initfn;
+
+    dc->realize = isa_com90c65_realizefn;
     dc->props = com90c65_isa_properties;
     set_bit(DEVICE_CATEGORY_NETWORK, dc->categories);
 }

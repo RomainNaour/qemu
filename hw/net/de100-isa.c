@@ -663,12 +663,14 @@ static void de100_isa_request_irq(void *opaque, int irq, int level)
 /**
  * Initialize the device
  *
- * @param dev ISA Device
+ * @param dev DeviceState
+ * 
+ * @param errp Error
  *
- * @return 0 on success
  */
-static int de100_isa_init(ISADevice *dev)
+static void de100_isa_realizefn(DeviceState *dev, Error **errp)
 {
+    ISADevice *isadev = ISA_DEVICE(dev);
     ISADE100State *isa = ISA_DE100(dev);
     PCNetState *s = &isa->state;
     qemu_irq* irq = NULL;
@@ -687,7 +689,7 @@ static int de100_isa_init(ISADevice *dev)
 
     /* Handler for memory-mapped I/O */
     memory_region_init_io(&isa->io, NULL, &de100_io_ops, isa, "de100-io", 0x10);
-    isa_register_ioport(dev, &isa->io, isa->iobase);
+    isa_register_ioport(isadev, &isa->io, isa->iobase);
 
     /* Allocate the total DE100 memory of two 32KB RAM. */
     memory_region_init_ram(&isa->mmio, "de100-mmio", 2 * RAM_SIZE);
@@ -756,7 +758,7 @@ static int de100_isa_init(ISADevice *dev)
     /* Give the Lance our interrupt handler before passing it to this isa
      * bus, if required, accordingly to the NICSR register.
      */
-    isa_init_irq(dev, &isa->irq, isa->isairq);
+    isa_init_irq(isadev, &isa->irq, isa->isairq);
     irq = qemu_allocate_irqs(de100_isa_request_irq, isa, 1);
     s->irq = irq[0];
 
@@ -768,7 +770,7 @@ static int de100_isa_init(ISADevice *dev)
     isa->signature_pos = 0;
     isa->eth_addr_pos = 0;
 
-    return pcnet_common_init(&dev->qdev, s, &net_de100_isa_info);
+    pcnet_common_init(&dev->qdev, s, &net_de100_isa_info);
 }
 
 /**
@@ -814,9 +816,8 @@ static Property de100_isa_properties[] = {
 static void de100_isa_class_init(ObjectClass *klass, void *data)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
-    ISADeviceClass *ic = ISA_DEVICE_CLASS(klass);
 
-    ic->init = de100_isa_init;
+    dc->realize = de100_isa_realizefn;
     dc->reset = de100_isa_reset;
     dc->vmsd = &de100_isa_vmstate;
     dc->props = de100_isa_properties;
