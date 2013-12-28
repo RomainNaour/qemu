@@ -16,8 +16,11 @@
 #define IO_BASES_MAX 8
 static int io_bases[IO_BASES_MAX] = {0x260, 0x290, 0x2e0, 0x2f0, 0x300, 0x350, 0x380, 0x3e0};
 
+#define TYPE_ISA_COM90C65 "com90c65_isa"
+#define ISA_COM90C65(obj) OBJECT_CHECK(ISACOM90C65State, (obj), TYPE_ISA_COM90C65)
+
 typedef struct ISACOM90C65State {
-    ISADevice dev;
+    ISADevice parent_obj;
     uint32_t iobase;
     uint32_t isairq;
     uint32_t mmiobase;
@@ -54,7 +57,7 @@ static int com90c65_set_io_select(COM90C65State *s, int io_base)
 }
 
 static int isa_com90c65_initfn(ISADevice *dev) {
-    ISACOM90C65State *isa = DO_UPCAST(ISACOM90C65State, dev, dev);
+    ISACOM90C65State *isa = ISA_COM90C65(dev);
     COM90C65State *s = &isa->com90c65;
 
     if (s->c.vlan) {
@@ -118,7 +121,7 @@ static void isa_com90c65_class_initfn(ObjectClass *klass, void *data)
 }
 
 static const TypeInfo com90c65_isa_info = {
-    .name          = "com90c65_isa",
+    .name          = TYPE_ISA_COM90C65,
     .parent        = TYPE_ISA_DEVICE,
     .instance_size = sizeof (ISACOM90C65State),
     .class_init    = isa_com90c65_class_initfn,
