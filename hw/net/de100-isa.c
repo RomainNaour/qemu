@@ -146,7 +146,7 @@ static void de100_ram_shadow_update(ISADE100State *isa)
     if(!(isa->romshadowed) && (isa->nicsr & NICSR_SHE)) {
         // not shadowed but should be: remove rom subregion form memory map
 #ifndef DEBUG_DE100_ROM
-        memory_region_del_subregion(isa_address_space(&isa->dev), &isa->rom);
+        memory_region_del_subregion(isa_address_space(&isa->parent_obj), &isa->rom);
 #endif /* !DEBUG_DE100_ROM */
         isa->romshadowed = 1;
 	DPRINTF_INT("ROM is now shadowed\n");
@@ -154,7 +154,7 @@ static void de100_ram_shadow_update(ISADE100State *isa)
     if((isa->romshadowed) && !(isa->nicsr & NICSR_SHE)) {
         // shadowed but should not be: add subregion to memory map
 #ifndef DEBUG_DE100_ROM
-        memory_region_add_subregion_overlap(isa_address_space(&isa->dev),
+        memory_region_add_subregion_overlap(isa_address_space(&isa->parent_obj),
                                             isa->rombase, &isa->rom, 3);
 #endif /* !DEBUG_DE100_ROM */
         isa->romshadowed = 0;
@@ -178,9 +178,9 @@ static void de100_rom_reset(ISADE100State* isa)
  */
 static void de100_ram_select32(ISADE100State* isa)
 {
-    memory_region_del_subregion(isa_address_space(&isa->dev),
+    memory_region_del_subregion(isa_address_space(&isa->parent_obj),
 				&isa->mmio_bank2);
-    memory_region_add_subregion_overlap(isa_address_space(&isa->dev),
+    memory_region_add_subregion_overlap(isa_address_space(&isa->parent_obj),
 					isa->mmio_zone2_addr + ALIAS_START,
 					&isa->mmio_bank1,
 					2);
@@ -196,16 +196,16 @@ static void de100_ram_select32(ISADE100State* isa)
  */
 static void de100_ram_select64(ISADE100State* isa)
 {
-    memory_region_del_subregion(isa_address_space(&isa->dev),
+    memory_region_del_subregion(isa_address_space(&isa->parent_obj),
 				&isa->mmio_bank2);
-    memory_region_del_subregion(isa_address_space(&isa->dev),
+    memory_region_del_subregion(isa_address_space(&isa->parent_obj),
 				&isa->mmio_bank1);
 
-    memory_region_add_subregion_overlap(isa_address_space(&isa->dev),
+    memory_region_add_subregion_overlap(isa_address_space(&isa->parent_obj),
 					isa->mmio_zone2_addr + ALIAS_START,
 					&isa->mmio_bank1, 2);
 
-    memory_region_add_subregion_overlap(isa_address_space(&isa->dev),
+    memory_region_add_subregion_overlap(isa_address_space(&isa->parent_obj),
 					isa->mmio_zone1_addr + ALIAS_START,
 					&isa->mmio_bank2, 2);
 
@@ -222,10 +222,10 @@ static void de100_ram_select64(ISADE100State* isa)
  */
 static void de100_ram_deselect32(ISADE100State* isa)
 {
-    memory_region_del_subregion(isa_address_space(&isa->dev),
+    memory_region_del_subregion(isa_address_space(&isa->parent_obj),
 				&isa->mmio_bank1);
 
-    memory_region_add_subregion_overlap(isa_address_space(&isa->dev),
+    memory_region_add_subregion_overlap(isa_address_space(&isa->parent_obj),
 					isa->mmio_zone2_addr + ALIAS_START,
 					&isa->mmio_bank2, 2);
     DPRINTF_INT("Bank2 mapped on 0x%X:0x%X\n",
@@ -239,16 +239,16 @@ static void de100_ram_deselect32(ISADE100State* isa)
  */
 static void de100_ram_deselect64(ISADE100State* isa)
 {
-    memory_region_del_subregion(isa_address_space(&isa->dev),
+    memory_region_del_subregion(isa_address_space(&isa->parent_obj),
 				&isa->mmio_bank1);
-    memory_region_del_subregion(isa_address_space(&isa->dev),
+    memory_region_del_subregion(isa_address_space(&isa->parent_obj),
 				&isa->mmio_bank2);
 
-    memory_region_add_subregion_overlap(isa_address_space(&isa->dev),
+    memory_region_add_subregion_overlap(isa_address_space(&isa->parent_obj),
 					isa->mmio_zone1_addr + ALIAS_START,
 					&isa->mmio_bank1, 2);
 
-    memory_region_add_subregion_overlap(isa_address_space(&isa->dev),
+    memory_region_add_subregion_overlap(isa_address_space(&isa->parent_obj),
 					isa->mmio_zone2_addr + ALIAS_START,
 					&isa->mmio_bank2, 2);
 }
@@ -679,6 +679,8 @@ static void de100_isa_realizefn(DeviceState *dev, Error **errp)
         isa->romfile = (char*)DE100_ROMFILE;
     }
 
+#if 0
+    // struct NICConf n'a plus de champ vlan
     if (s->conf.vlan) {
         DPRINTF("initialization (DE100 in vlan%d)\n",
                 s->conf.vlan->id);
@@ -686,13 +688,14 @@ static void de100_isa_realizefn(DeviceState *dev, Error **errp)
                 isa->iobase, isa->isairq, isa->mmiobase, isa->mmiosize,
 		isa->rombase, isa->romfile);
     }
+#endif
 
     /* Handler for memory-mapped I/O */
     memory_region_init_io(&isa->io, NULL, &de100_io_ops, isa, "de100-io", 0x10);
     isa_register_ioport(isadev, &isa->io, isa->iobase);
 
     /* Allocate the total DE100 memory of two 32KB RAM. */
-    memory_region_init_ram(&isa->mmio, "de100-mmio", 2 * RAM_SIZE);
+    memory_region_init_ram(&isa->mmio, NULL, "de100-mmio", 2 * RAM_SIZE);
     vmstate_register_ram_global(&isa->mmio);
 
 
@@ -711,35 +714,35 @@ static void de100_isa_realizefn(DeviceState *dev, Error **errp)
     memory_region_init_io(&isa->mmio_dbg, NULL, &de100_mmio_ops, isa,
 			  "de100-mmio-dbg", isa->mmiosize * 1024);
 
-    memory_region_add_subregion_overlap(isa_address_space(dev),
+    memory_region_add_subregion_overlap(isa_address_space(isadev),
                                         isa->mmiobase, &isa->mmio_dbg, 2);
 #endif /* DEBUG_DE100_MMIO */
 
     isa->ramselected = 0;
-    memory_region_init_alias(&isa->mmio_bank1, "mmio-bank1", &isa->mmio,
+    memory_region_init_alias(&isa->mmio_bank1, NULL, "mmio-bank1", &isa->mmio,
 			     ALIAS_START, ALIAS_SIZE);
 
-    memory_region_init_alias(&isa->mmio_bank2, "mmio-bank2", &isa->mmio,
+    memory_region_init_alias(&isa->mmio_bank2, NULL, "mmio-bank2", &isa->mmio,
 			     RAM_OFFSET + ALIAS_START, ALIAS_SIZE);
 
 
     /* If we are in a 32 KB configuration, we only have the upper 32KB */
     /* mapped, when BS=0, and the lower ones when BS=1. */
-    memory_region_add_subregion_overlap(isa_address_space(dev),
+    memory_region_add_subregion_overlap(isa_address_space(isadev),
     					isa->mmio_zone2_addr +
 					ALIAS_START,
 					&isa->mmio_bank2, 2);
     if (isa->mmiosize == 64)
-	memory_region_add_subregion_overlap(isa_address_space(dev),
+	memory_region_add_subregion_overlap(isa_address_space(isadev),
 					    isa->mmio_zone1_addr +
 					    ALIAS_START,
 					    &isa->mmio_bank1, 2);
 
     /* Handler for rom */
-    memory_region_init_ram(&isa->rom, "de100-rom", 16 * 1024);
+    memory_region_init_ram(&isa->rom, NULL, "de100-rom", 16 * 1024);
     vmstate_register_ram_global(&isa->rom);
     isa->romshadowed = 0;
-    memory_region_add_subregion_overlap(isa_address_space(dev),
+    memory_region_add_subregion_overlap(isa_address_space(isadev),
                                         isa->rombase, &isa->rom, 3);
 
     char *filename=qemu_find_file(QEMU_FILE_TYPE_BIOS, isa->romfile);
@@ -770,7 +773,7 @@ static void de100_isa_realizefn(DeviceState *dev, Error **errp)
     isa->signature_pos = 0;
     isa->eth_addr_pos = 0;
 
-    pcnet_common_init(&dev->qdev, s, &net_de100_isa_info);
+    pcnet_common_init(dev, s, &net_de100_isa_info);
 }
 
 /**
@@ -779,7 +782,7 @@ static void de100_isa_realizefn(DeviceState *dev, Error **errp)
 static void de100_isa_reset(DeviceState *dev)
 {
     unsigned int i = 0;
-    ISADE100State *isa = DO_UPCAST(ISADE100State, dev.qdev, dev);
+    ISADE100State *isa = ISA_DE100(dev);
 
     pcnet_h_reset(&isa->state);
 #ifdef DEBUG_DE100_ROM
@@ -788,7 +791,7 @@ static void de100_isa_reset(DeviceState *dev)
     if(isa->romshadowed == 2)
     {
         DPRINTF_ROM("ROM init end.\n");
-        memory_region_del_subregion(isa_address_space(&isa->dev), &isa->rom);
+        memory_region_del_subregion(isa_address_space(&isa->parent_obj), &isa->rom);
         isa->romshadowed = 0;
     }
 #endif /* DEBUG_DE100_ROM */
