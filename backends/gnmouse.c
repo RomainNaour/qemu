@@ -310,6 +310,7 @@ CharDriverState *qemu_chr_open_gnmouse (void)
 
     chr->chr_write = gnmouse_chr_write;
     chr->chr_close = gnmouse_chr_close;
+    chr->explicit_be_open = true;
 
     /* create a new Qemu's timer with gnmouse_handler() as timeout handler. */
     save->transmit_timer = timer_new_ns(QEMU_CLOCK_VIRTUAL, (QEMUTimerCB *) gnmouse_handler, chr);
