@@ -3,7 +3,7 @@
  *
  * Adapted from msmouse
  *
- * Copyright (c) 2012 Naour Romain (romain.naour@openwide.fr)
+ * Copyright (c) 2012 Romain Naour
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -88,7 +88,8 @@ states;
  * @buf: buffer to write
  * @len: lengh of the buffer to write
  */
-static int gnmouse_chr_write (struct CharDriverState *s, const uint8_t *buf, int len)
+static int gnmouse_chr_write (struct CharDriverState *s, const uint8_t *buf,
+			      int len)
 {
     /* Ignore writes to mouse port */
     return len;
@@ -116,7 +117,7 @@ static void gnmouse_chr_close (struct CharDriverState *chr)
  * gnmouse_handler: send a byte on serial port to the guest system
  * This handler is called on each timer timeout or directly by gnmouse_event()
  * when no transmission is underway.
- * It use a state machine in order to know with byte of the frame must be send.
+ * It use a state machine in order to know which byte of the frame must be send.
  * 
  * Returns void
  * 
@@ -239,9 +240,10 @@ static void gnmouse_handler (void *opaque)
     }
 
     /* reload timer */
-    timer_mod(save->transmit_timer, qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL) + save->transmit_time);
+    timer_mod(save->transmit_timer,
+	      qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL) + save->transmit_time);
     DPRINTF("mod_timer: %d\n", save->index);
-    /* write date on serial port */
+    /* write data on serial port */
     qemu_chr_be_write(chr, &(data[save->index - 1]) , 1);
     DPRINTF("write :%x\n", data[save->index - 1] );
     /* next state */
@@ -313,7 +315,8 @@ CharDriverState *qemu_chr_open_gnmouse (void)
     chr->explicit_be_open = true;
 
     /* create a new Qemu's timer with gnmouse_handler() as timeout handler. */
-    save->transmit_timer = timer_new_ns(QEMU_CLOCK_VIRTUAL, (QEMUTimerCB *) gnmouse_handler, chr);
+    save->transmit_timer = timer_new_ns(QEMU_CLOCK_VIRTUAL,
+					(QEMUTimerCB *) gnmouse_handler, chr);
     /* calculate the transmit_time for 1200 bauds transmission */
     save->transmit_time = (get_ticks_per_sec() / 1200) * 10; /* 1200 bauds */
     
@@ -325,7 +328,8 @@ CharDriverState *qemu_chr_open_gnmouse (void)
     /* keep address of gnmouse_save */
     chr->opaque = save;
 
-    qemu_add_mouse_event_handler(gnmouse_event, chr, 0, "QEMU Genius GM-6000 Mouse");
+    qemu_add_mouse_event_handler(gnmouse_event, chr, 0,
+				 "QEMU Genius GM-6000 Mouse");
     
     return chr;
 }
