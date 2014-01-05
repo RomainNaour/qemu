@@ -1792,6 +1792,7 @@ DEF("chardev", HAS_ARG, QEMU_OPTION_chardev,
     "-chardev udp,id=id[,host=host],port=port[,localaddr=localaddr]\n"
     "         [,localport=localport][,ipv4][,ipv6][,mux=on|off]\n"
     "-chardev msmouse,id=id[,mux=on|off]\n"
+    "-chardev gnmouse,id=id[,mux=on|off]\n"
     "-chardev vc,id=id[[,width=width][,height=height]][[,cols=cols][,rows=rows]]\n"
     "         [,mux=on|off]\n"
     "-chardev ringbuf,id=id[,size=size]\n"
@@ -1831,6 +1832,7 @@ Backend is one of:
 @option{socket},
 @option{udp},
 @option{msmouse},
+@option{gnmouse},
 @option{vc},
 @option{ringbuf},
 @option{file},
@@ -1928,6 +1930,11 @@ If neither is specified the device may use either protocol.
 @item -chardev msmouse ,id=@var{id}
 
 Forward QEMU's emulated msmouse events to the guest. @option{msmouse} does not
+take any options.
+
+@item -chardev gnmouse ,id=@var{id}
+
+Forward QEMU's emulated gnmouse events to the guest. @option{gnmouse} does not
 take any options.
 
 @item -chardev vc ,id=@var{id} [[,width=@var{width}] [,height=@var{height}]] [[,cols=@var{cols}] [,rows=@var{rows}]]
@@ -2514,6 +2521,9 @@ or fake device.
 
 @item msmouse
 Three button serial mouse. Configure the guest to use Microsoft protocol.
+
+@item gnmouse
+Three button serial mouse. Configure the guest to use Genius protocol.
 @end table
 ETEXI
 
