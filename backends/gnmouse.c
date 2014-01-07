@@ -32,7 +32,7 @@
 #include "ui/console.h"
 #include "qemu/timer.h"
 
-//#define DEBUG_GENIUS_MOUSE
+/* #define DEBUG_GENIUS_MOUSE */
 
 #ifdef DEBUG_GENIUS_MOUSE
 #define DPRINTF(fmt, ...) \
@@ -45,51 +45,50 @@ do {} while (0)
 /*
  * struct gnmouse_save:
  * This structure is used to save private info for Genius mouse.
- * 
+ *
  * dx: deltas on x-axis saved since last frame send to emulated system.
  * dy: deltas on y-axis saved since last frame send to emulated system.
- * transmit_timer: Qemu's timer
+ * transmit_timer: QEMU's timer
  * transmit_time: reload value for transmit_timer
  * data: frame to be sent
  * index: used to save current state of the state machine. see type states below
  */
-typedef struct gnmouse_save{
-  int dx;
-  int dy;
-  int button;
-  struct QEMUTimer *transmit_timer;	/* Qemu timer */
-  uint64_t transmit_time;		/* time to transmit a char in ticks*/
-  unsigned char data[5];
-  int index;
+typedef struct gnmouse_save {
+    int dx;
+    int dy;
+    int button;
+    struct QEMUTimer *transmit_timer; /* QEMU timer */
+    uint64_t transmit_time;           /* time to transmit a char in ticks*/
+    unsigned char data[5];
+    int index;
 } gnmouse_save;
 
 
-/* states  */
-typedef enum
-{
-  START,  /* 0 */
-  CHAR_1, /* 1 : BP */
-  CHAR_2, /* 2 : Dx */
-  CHAR_3, /* 3 : Dy */
-  CHAR_4, /* 4 : Dx */
-  CHAR_5, /* 5 : Dy */
-  STOP    /* 6 */
+/* states */
+typedef enum {
+    START,  /* 0 */
+    CHAR_1, /* 1 : BP */
+    CHAR_2, /* 2 : Dx */
+    CHAR_3, /* 3 : Dy */
+    CHAR_4, /* 4 : Dx */
+    CHAR_5, /* 5 : Dy */
+    STOP    /* 6 */
 }
 states;
 
 /**
- * gnmouse_chr_write: this function is used when Qemu 
+ * gnmouse_chr_write: this function is used when QEMU
  * try to write something to mouse port.
  * Nothing is send to the emulated mouse.
- * 
+ *
  * Return: lengh of the buffer
- * 
+ *
  * @s: address of the CharDriverState used by the mouse
  * @buf: buffer to write
  * @len: lengh of the buffer to write
  */
-static int gnmouse_chr_write (struct CharDriverState *s, const uint8_t *buf,
-			      int len)
+static int gnmouse_chr_write(struct CharDriverState *s, const uint8_t *buf,
+                             int len)
 {
     /* Ignore writes to mouse port */
     return len;
@@ -97,20 +96,20 @@ static int gnmouse_chr_write (struct CharDriverState *s, const uint8_t *buf,
 
 /**
  * gnmouse_chr_close: this function close the mouse port.
- * It stop and free the Qemu's timer and free gnmouse_save struct.
- * 
+ * It stop and free the QEMU's timer and free gnmouse_save struct.
+ *
  * Return: void
- * 
+ *
  * @chr: address of the CharDriverState used by the mouse
  */
-static void gnmouse_chr_close (struct CharDriverState *chr)
+static void gnmouse_chr_close(struct CharDriverState *chr)
 {
-    /* stop and free the Qemu's timer */
-    timer_del( ((gnmouse_save *)chr->opaque)->transmit_timer);
+    /* stop and free the QEMU's timer */
+    timer_del(((gnmouse_save *)chr->opaque)->transmit_timer);
     timer_free(((gnmouse_save *)chr->opaque)->transmit_timer);
     /* free gnmouse_save struct */
     g_free(chr->opaque);
-    g_free (chr);
+    g_free(chr);
 }
 
 /**
@@ -118,145 +117,143 @@ static void gnmouse_chr_close (struct CharDriverState *chr)
  * This handler is called on each timer timeout or directly by gnmouse_event()
  * when no transmission is underway.
  * It use a state machine in order to know which byte of the frame must be send.
- * 
+ *
  * Returns void
- * 
+ *
  * @opaque: address of the CharDriverState used by the mouse
  */
-static void gnmouse_handler (void *opaque)
+static void gnmouse_handler(void *opaque)
 {
     CharDriverState *chr = (CharDriverState *)opaque;
     gnmouse_save *save = (gnmouse_save *)chr->opaque;
     unsigned char *data = save->data;
     int dx_tmp, dy_tmp;
-/* 
+/*
  * Byte 0:  1,  0,  0,  0,  0,  L,  M,  R
  * Byte 1: X7, X6, X5, X4, X3, X2, X1, X0
  * Byte 2: Y7, Y6, Y5, Y4, Y3, Y2, Y1, Y0
  * Byte 3: X7, X6, X5, X4, X3, X2, X1, X0
  * Byte 4: Y7, Y6, Y5, Y4, Y3, Y2, Y1, Y0
  */
-    switch (save->index)
-    {
-	case CHAR_4:
-	  if( (save->dx && save->dy) ){
-	    if(save->dx >= 128){
-	      DPRINTF("overflow dx= %d\n", save->dx);
-	      save->dx -=128;
-	      dx_tmp = 128;
-	    }else if(save->dx <= -127){
-	      DPRINTF("overflow dx= %d\n", save->dx);
-	      save->dx +=127;
-	      dx_tmp = -127;
-	    }else{
-	      dx_tmp = save->dx;
-	      save->dx = 0;
-	    }
+    switch (save->index) {
+    case CHAR_4:
+        if (save->dx && save->dy) {
+            if (save->dx >= 128) {
+                DPRINTF("overflow dx= %d\n", save->dx);
+                save->dx -= 128;
+                dx_tmp = 128;
+            } else if (save->dx <= -127) {
+                DPRINTF("overflow dx= %d\n", save->dx);
+                save->dx += 127;
+                dx_tmp = -127;
+            } else {
+                dx_tmp = save->dx;
+                save->dx = 0;
+            }
 
-	    if(save->dy >= 128){
-	      DPRINTF("overflow dy= %d\n", save->dy);
-	      save->dy -=128;
-	      dy_tmp = 128;
-	    }else if(save->dy <= -127){
-	      DPRINTF("overflow dy= %d\n", save->dy);
-	      save->dy +=127;
-	      dy_tmp = -127;
-	    }else{
-	      dy_tmp = save->dy;
-	      save->dy = 0;
-	    }
+            if (save->dy >= 128) {
+                DPRINTF("overflow dy= %d\n", save->dy);
+                save->dy -= 128;
+                dy_tmp = 128;
+            } else if (save->dy <= -127) {
+                DPRINTF("overflow dy= %d\n", save->dy);
+                save->dy += 127;
+                dy_tmp = -127;
+            } else {
+                dy_tmp = save->dy;
+                save->dy = 0;
+            }
 
-	    DPRINTF("dx= %d\n", save->dx);
-	    DPRINTF("dy= %d\n", save->dy);
+            DPRINTF("dx= %d\n", save->dx);
+            DPRINTF("dy= %d\n", save->dy);
 
-	    data[3] = dx_tmp;
-	    data[4] = -(dy_tmp);
+            data[3] = dx_tmp;
+            data[4] = -(dy_tmp);
+        }
+        break;
 
-	  }
-	  break;
+    case STOP:
+        if (!(save->dx && save->dy)) {
+            /* no more data */
+            DPRINTF("no more data\n");
+            return;
+        } else {
+            /* data saved */
+            DPRINTF("data saved\n");
+            save->index = START;
+        }
+        /* No break, pass-through START */
 
-	case STOP:
-	  if( !(save->dx && save->dy) ){
-	    /* no more data */
-	    DPRINTF("no more data\n");
-	    return;
-	  }else{
-	    /* data saved */
-	    DPRINTF("data saved\n");
-	    save->index = START;
-	  }
-	  /* No break, pass-through START */
-	case START:
-	  /* New serial frame */
-	  /* Buttons */
-	  data[0] = save->button;
+    case START:
+        /* New serial frame */
+        /* Buttons */
+        data[0] = save->button;
+        save->index = CHAR_1;
+        /* No break, pass-through CHAR_1 */
 
-	  save->index = CHAR_1;
+    case CHAR_1:
+        /* avoid overflow on dx or dy */
+        if (save->dx >= 128) {
+            DPRINTF("overflow dx= %d\n", save->dx);
+            save->dx -= 128;
+            dx_tmp = 128;
+        } else if (save->dx <= -127) {
+            DPRINTF("overflow dx= %d\n", save->dx);
+            save->dx += 127;
+            dx_tmp = -127;
+        } else{
+            dx_tmp = save->dx;
+            save->dx = 0;
+        }
 
-	  /* No break, pass-through CHAR_1 */
-	case CHAR_1:
-	  /* avoid overflow on dx or dy */
-	  if(save->dx >= 128){
-	    DPRINTF("overflow dx= %d\n", save->dx);
-	    save->dx -=128;
-	    dx_tmp = 128;
-	  }else if(save->dx <= -127){
-	    DPRINTF("overflow dx= %d\n", save->dx);
-	    save->dx +=127;
-	    dx_tmp = -127;
-	  }else{
-	    dx_tmp = save->dx;
-	    save->dx = 0;
-	  }
+        if (save->dy >= 128) {
+            DPRINTF("overflow dy= %d\n", save->dy);
+            save->dy -= 128;
+            dy_tmp = 128;
+        } else if (save->dy <= -127) {
+            DPRINTF("overflow dy= %d\n", save->dy);
+            save->dy += 127;
+            dy_tmp = -127;
+        } else{
+            dy_tmp = save->dy;
+            save->dy = 0;
+        }
 
-	  if(save->dy >= 128){
-	    DPRINTF("overflow dy= %d\n", save->dy);
-	    save->dy -=128;
-	    dy_tmp = 128;
-	  }else if(save->dy <= -127){
-	    DPRINTF("overflow dy= %d\n", save->dy);
-	    save->dy +=127;
-	    dy_tmp = -127;
-	  }else{
-	    dy_tmp = save->dy;
-	    save->dy = 0;
-	  }
+        DPRINTF("dx= %d\n", save->dx);
+        DPRINTF("dy= %d\n", save->dy);
 
-	  DPRINTF("dx= %d\n", save->dx);
-	  DPRINTF("dy= %d\n", save->dy);
+        /* Movement deltas */
+        data[1] = dx_tmp;
+        data[2] = -(dy_tmp);
+        data[3] = 0;
+        data[4] = 0;
 
-	  /* Movement deltas */
-	  data[1] = dx_tmp;
-	  data[2] = -(dy_tmp);
-	  data[3] = 0;
-	  data[4] = 0;
-
-	case CHAR_2:
-	case CHAR_3:
-	case CHAR_5:
-	  break;
-	default:
-	  return;
+    case CHAR_2:
+    case CHAR_3:
+    case CHAR_5:
+        break;
+    default:
+        return;
     }
 
     /* reload timer */
     timer_mod(save->transmit_timer,
-	      qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL) + save->transmit_time);
+              qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL) + save->transmit_time);
     DPRINTF("mod_timer: %d\n", save->index);
     /* write data on serial port */
-    qemu_chr_be_write(chr, &(data[save->index - 1]) , 1);
-    DPRINTF("write :%x\n", data[save->index - 1] );
+    qemu_chr_be_write(chr, &(data[save->index - 1]), 1);
+    DPRINTF("write :%x\n", data[save->index - 1]);
     /* next state */
     save->index += 1;
 }
 
 /**
- * gnmouse_event: event handler called by SDL functions 
+ * gnmouse_event: event handler called by SDL functions
  * on each mouse movement or button press.
- * 
+ *
  * Return void
- * 
- * @opaque: address of the CharDriverState used by the mouse 
+ *
+ * @opaque: address of the CharDriverState used by the mouse
  * @dx: deltas on the x-axis since last event
  * @dy: deltas on the y-axis since last event
  * @dz: deltas on the z-axis since last event (not used)
@@ -270,21 +267,21 @@ static void gnmouse_event(void *opaque,
     char BP = 0x80;
 
     /* save deltas */
-    save->dx +=  dx;
-    save->dy +=  dy;
+    save->dx += dx;
+    save->dy += dy;
 
     DPRINTF("dx= %d; dy= %d; buttons=%x\n", dx, dy, buttons_state);
 
     /* Buttons */
-    BP |= (buttons_state & 0x01 ? 0x00 : 0x04); // BP1 = L
-    BP |= (buttons_state & 0x02 ? 0x00 : 0x01); // BP2 = R
-    BP |= (buttons_state & 0x04 ? 0x00 : 0x02); // BP4 = M
+    BP |= (buttons_state & 0x01 ? 0x00 : 0x04); /* BP1 = L */
+    BP |= (buttons_state & 0x02 ? 0x00 : 0x01); /* BP2 = R */
+    BP |= (buttons_state & 0x04 ? 0x00 : 0x02); /* BP4 = M */
 
     save->button = BP;
-    if(save->index == STOP){
-      /* no transmission is underway, start a new transmission */
-      save->index = START;
-      gnmouse_handler( (void*) chr);
+    if (save->index == STOP) {
+        /* no transmission is underway, start a new transmission */
+        save->index = START;
+        gnmouse_handler((void *) chr);
     }
 }
 
@@ -292,17 +289,17 @@ static void gnmouse_event(void *opaque,
  * qemu_chr_open_gnmouse: Init function for Genius mouse
  * allocate a gnmouse_save structure to save data used by gnmouse emulation.
  * allocate a new CharDriverState.
- * create a new Qemu's timer with gnmouse_handler() as timeout handler.
+ * create a new QEMU's timer with gnmouse_handler() as timeout handler.
  * calculate the transmit_time for 1200 bauds transmission.
- * 
+ *
  * Return address of the initialized CharDriverState
- * 
+ *
  * @opts: argument not used
  */
-CharDriverState *qemu_chr_open_gnmouse (void)
+CharDriverState *qemu_chr_open_gnmouse(void)
 {
     CharDriverState *chr;
-    gnmouse_save * save;
+    gnmouse_save *save;
 
     DPRINTF("qemu_chr_open_gnmouse\n");
 
@@ -314,23 +311,23 @@ CharDriverState *qemu_chr_open_gnmouse (void)
     chr->chr_close = gnmouse_chr_close;
     chr->explicit_be_open = true;
 
-    /* create a new Qemu's timer with gnmouse_handler() as timeout handler. */
+    /* create a new QEMU's timer with gnmouse_handler() as timeout handler. */
     save->transmit_timer = timer_new_ns(QEMU_CLOCK_VIRTUAL,
-					(QEMUTimerCB *) gnmouse_handler, chr);
+                                        (QEMUTimerCB *) gnmouse_handler, chr);
     /* calculate the transmit_time for 1200 bauds transmission */
     save->transmit_time = (get_ticks_per_sec() / 1200) * 10; /* 1200 bauds */
-    
+
     DPRINTF("transmit_time = %lld\n", save->transmit_time);
-    
+
     /* init state machine */
     save->index = STOP;
-    
+
     /* keep address of gnmouse_save */
     chr->opaque = save;
 
     qemu_add_mouse_event_handler(gnmouse_event, chr, 0,
-				 "QEMU Genius GM-6000 Mouse");
-    
+                                 "QEMU Genius GM-6000 Mouse");
+
     return chr;
 }
 
